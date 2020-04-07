@@ -231,11 +231,27 @@ def transform_fn(net, data, input_content_type, output_content_type):
     :return: response payload and content type.
     """
     ctx = mx.cpu()
-    parsed = json.loads(data)
+    #parsed = json.loads(data)
+    #print(data)
+    #print(len(data.split('\n')))
+
+    f1, f2 = [], []
+    for line in data.split('\n'):
+        try:
+            #print(line.split(',')[0].strip())
+            f1.append(float(line.split(',')[0].strip()))
+        except:
+            print("An exception occurred")
+
+        try:
+            #print(line.split(',')[1].strip())
+            f2.append(float(line.split(',')[1].strip()))
+        except:
+            print("An exception occurred")
 
     trained_net, user_index, product_index = net
-    users = pd.DataFrame({'user_id': parsed['user_id']}).merge(user_index, how='left')['user'].values
-    items = pd.DataFrame({'product_id': parsed['product_id']}).merge(product_index, how='left')['item'].values
+    users = pd.DataFrame({'user_id': f1}).merge(user_index, how='left')['user'].values
+    items = pd.DataFrame({'product_id': f2}).merge(product_index, how='left')['item'].values
     
     predictions = trained_net(nd.array(users).as_in_context(ctx), nd.array(items).as_in_context(ctx))
     response_body = json.dumps(predictions.asnumpy().tolist())
